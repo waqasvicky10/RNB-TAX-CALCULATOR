@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RNB Networks — Customer Invoice</title>
+
+  <!-- FIXED HTML2PDF LIBRARY -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0a1a2b;
+      --card: #0f2439;
+      --accent: #42a5f5;
+      --muted: #b6c7db;
+      --white: #ffffff;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--white);
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 28px auto;
+      padding: 22px;
+    }
+
+    .container {
+      background: var(--card);
+      padding: 22px;
+      border-radius: 10px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    h1.app-title {
+      text-align: center;
+      margin: 0 0 18px 0;
+      color: var(--accent);
+      font-size: 22px;
+    }
+
+    .row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 12px;
+    }
+
+    .row .field {
+      flex: 1;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      width: 100%;
+      padding: 11px;
+      border-radius: 8px;
+      border: 2px solid var(--accent);
+      background: var(--white);
+      color: #0b2236;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button.btn {
+      width: 100%;
+      padding: 12px;
+      background: var(--accent);
+      color: var(--white);
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    button.btn.secondary {
+      background: #10b981;
+    }
+
+    #resultBox {
+      margin-top: 14px;
+      background: #15314d;
+      padding: 14px;
+      border-radius: 8px;
+      color: var(--muted);
+      display: none;
+    }
+
+    /* -------- INVOICE (WHITE PAPER) -------- */
+    #invoiceArea {
+      display: none;
+      margin-top: 22px;
+      background: var(--white);
+      color: #0b2236;
+      padding: 22px;
+      border-radius: 8px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .logo-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .logo-wrap img {
+      display: block;
+      max-width: 180px;
+      height: auto;
+      object-fit: contain;
+    }
+
+    .inv-company {
+      font-size: 22px;
+      font-weight: 700;
+      color: #072943;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .inv-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #567892;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .inv-meta {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #072943;
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+      color: #334e6b;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      border-top: 2px solid #072943;
+      padding-top: 12px;
+      color: #234a63;
+      font-weight: 600;
+      line-height: 1.4;
+      font-size: 12px;
+    }
+
+    .footer .addr {
+      display: block;
+      max-width: 820px;
+      margin: auto;
+    }
+
+    /* --- MOBILE RESPONSIVE FIX --- */
+    @media (max-width:800px) {
+      .row {
+        flex-direction: column;
+      }
+
+      .inv-table .label,
+      .inv-table .value {
+        text-align: left;
+      }
+
+      .logo-wrap img {
+        max-width: 140px;
+      }
+
+      #invoiceArea {
+        padding: 14px;
+      }
+    }
+
+    @media (max-width:600px) {
+      .inv-table td {
+        padding: 6px 4px;
+        font-size: 13px;
+      }
+
+      .inv-title {
+        font-size: 18px;
+      }
+    }
+
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .wrap {
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        background: white;
+      }
+
+      #invoiceArea {
+        padding: 18mm;
+      }
+
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+
+      .no-print {
+        display: none !important;
+      }
+
+      #invoiceArea {
+        display: block !important;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+        width: 100%;
+      }
+
+      .logo-wrap img {
+        max-width: 150px;
+      }
+
+      .footer {
+        border-top: 1px solid #334e6b;
+      }
+    }
+
+    /* Professional Invoice Table Styling */
+    .inv-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .inv-table tr:first-child td {
+      border-top: 2px solid #072943;
+    }
+
+    .inv-table td {
+      padding: 12px 10px;
+      border-bottom: 1px solid #e6eef6;
+      font-size: 14px;
+    }
+
+    .inv-table .label {
+      width: 50%;
+      color: #334e6b;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    .inv-table .value {
+      width: 50%;
+      text-align: right;
+      font-family: 'Courier New', Courier, monospace;
+      /* Monospaced for numbers */
+      font-weight: 600;
+    }
+
+    .inv-table tr.total-row td {
+      border-top: 2px solid #072943;
+      border-bottom: 2px solid #072943;
+      background: #f8fbff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="wrap">
+    <div class="container">
+
+      <div class="logo-wrap no-print">
+        <img src="images/rnb-logo.png" alt="RNB Logo">
+      </div>
+
+      <h1 class="app-title">RNB Networks — Invoice Generator</h1>
+
+      <!-- INPUTS -->
+      <div class="no-print">
+        <div class="row">
+          <div class="field"><input id="userID" type="text" placeholder="User ID" /></div>
+          <div class="field"><input id="customerName" type="text" placeholder="Customer Name" /></div>
+        </div>
+
+        <div class="row">
+          <div class="field">
+            <select id="billingMonth">
+              <option value="">Select Billing Month</option>
+              <option>January</option>
+              <option>February</option>
+              <option>March</option>
+              <option>April</option>
+              <option>May</option>
+              <option>June</option>
+              <option>July</option>
+              <option>August</option>
+              <option>September</option>
+              <option>October</option>
+              <option>November</option>
+              <option>December</option>
+            </select>
+          </div>
+
+          <div class="field"><input id="baseAmount" type="number" placeholder="Base Amount (PKR)" /></div>
+        </div>
+
+        <div class="row">
+          <div class="field"><button class="btn" onclick="calculate()">Calculate Amount</button></div>
+          <div class="field"><button id="pdfBtn" class="btn secondary" style="display:none;"
+              onclick="generatePDF()">Download PDF Invoice</button></div>
+        </div>
+
+        <div id="resultBox"></div>
+      </div>
+
+      <!-- INVOICE PAPER -->
+      <div id="invoiceArea">
+
+        <div class="logo-wrap">
+          <img src="images/rnb-logo.png" alt="RNB Logo">
+        </div>
+
+        <div class="inv-header" style="text-align: center; margin-bottom: 20px;">
+          <div class="inv-company">RNB Networks</div>
+          <div class="inv-title">Tax Invoice</div>
+        </div>
+
+        <div class="inv-meta">
+          <div>Invoice #: <span id="inv_number"></span></div>
+          <div>Date: <span id="inv_date"></span></div>
+        </div>
+
+        <table class="inv-table">
+          <tr>
+            <td class="label">User ID</td>
+            <td class="value" id="inv_uid">—</td>
+          </tr>
+          <tr>
+            <td class="label">Customer Name</td>
+            <td class="value" id="inv_name">—</td>
+          </tr>
+          <tr>
+            <td class="label">Billing Month</td>
+            <td class="value" id="inv_month">—</td>
+          </tr>
+          <tr>
+            <td class="label">Base Amount</td>
+            <td class="value" id="inv_base">—</td>
+          </tr>
+          <tr>
+            <td class="label">19.5% SRB Tax</td>
+            <td class="value" id="inv_srb">—</td>
+          </tr>
+          <tr>
+            <td class="label">Subtotal (After SRB)</td>
+            <td class="value" id="inv_after_srb">—</td>
+          </tr>
+          <tr>
+            <td class="label">15% Advance Income Tax</td>
+            <td class="value" id="inv_income">—</td>
+          </tr>
+          <tr class="total-row">
+            <td class="label" style="font-weight:800; font-size: 16px;">Final Amount (Inclusive of Taxes)</td>
+            <td class="value" id="inv_total" style="font-weight:800;color:#0b7a4a; font-size: 16px;">—</td>
+          </tr>
+        </table>
+
+        <div class="inv-sign">
+          <div>
+            <p>______________________________</p>
+            <p>Authorized Signature</p>
+          </div>
+          <div style="text-align:right;">
+            <p style="margin:0;font-weight:700">RNB Networks</p>
+            <p style="margin:0;font-size:13px;color:#567892">Thank you for your business.</p>
+          </div>
+        </div>
+
+        <div class="footer">
+          <span class="addr">
+            Helpline: 03-111-000-314 &nbsp; · &nbsp;
+            Address: Riderz Net Office, Plot No. 382, Sec B, Gulshan-e-Zahoor,
+            A B Seniya Line, Karachi
+          </span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+
+    function generateInvoiceNumber() {
+      return 'RNB-' + Math.floor(Math.random() * 90000 + 10000);
+    }
+
+    function setInvoiceHeader() {
+      document.getElementById('inv_number').textContent = generateInvoiceNumber();
+      const now = new Date();
+      const opts = { year: 'numeric', month: 'short', day: '2-digit' };
+      document.getElementById('inv_date').textContent =
+        now.toLocaleDateString(undefined, opts) + ' ' + now.toLocaleTimeString();
+    }
+
+    function calculate() {
+      const uid = document.getElementById('userID').value.trim();
+      const name = document.getElementById('customerName').value.trim();
+      const baseRaw = document.getElementById('baseAmount').value;
+      const month = document.getElementById('billingMonth').value;
+
+      const base = parseFloat(baseRaw);
+      if (!uid || !name || !month || isNaN(base) || base <= 0) {
+        alert('Please fill all fields correctly.');
+        return;
+      }
+
+      const srb = +(base * 0.195);
+      const afterSRB = +(base + srb);
+      const incomeTax = +(afterSRB * 0.15);
+      const finalAmount = +(afterSRB + incomeTax);
+
+      document.getElementById('resultBox').style.display = 'block';
+      document.getElementById('resultBox').innerHTML = `
+        <strong>Base Amount:</strong> Rs ${base.toFixed(2)} <br>
+        <strong>19.5% SRB:</strong> Rs ${srb.toFixed(2)} <br>
+        <strong>Subtotal (After SRB):</strong> Rs ${afterSRB.toFixed(2)} <br>
+        <strong>15% Advance Income Tax:</strong> Rs ${incomeTax.toFixed(2)} <br>
+        <strong style="color:#7ed080">Final Amount:</strong>
+        <span style="color:#7ed080;font-size:16px;font-weight:700;">
+          Rs ${finalAmount.toFixed(2)}
+        </span>
+      `;
+
+      setInvoiceHeader();
+      document.getElementById('inv_uid').textContent = uid;
+      document.getElementById('inv_name').textContent = name;
+      document.getElementById('inv_month').textContent = month;
+      document.getElementById('inv_base').textContent = `Rs ${base.toFixed(2)}`;
+      document.getElementById('inv_srb').textContent = `Rs ${srb.toFixed(2)}`;
+      document.getElementById('inv_after_srb').textContent = `Rs ${afterSRB.toFixed(2)}`;
+      document.getElementById('inv_income').textContent = `Rs ${incomeTax.toFixed(2)}`;
+      document.getElementById('inv_total').textContent = `Rs ${finalAmount.toFixed(2)}`;
+
+      document.getElementById('invoiceArea').style.display = 'block';
+      document.getElementById('pdfBtn').style.display = 'inline-block';
+    }
+
+    function generatePDF() {
+      const element = document.getElementById('invoiceArea');
+      const invoiceNumber = document.getElementById('inv_number').textContent;
+
+      // Ensure images are fully loaded
+      const images = element.getElementsByTagName('img');
+      for (let img of images) {
+        if (!img.complete) {
+          alert("Images are still loading, please wait.");
+          return;
+        }
+      }
+
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: invoiceNumber + '.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: true,
+          letterRendering: true,
+          allowTaint: false // Set to false to try CORS method
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+
+      // Set explicit width for PDF generation to ensure layout consistency
+      const originalStyle = element.style.cssText;
+      element.style.width = '190mm'; // Standard A4 width minus margins
+      element.style.padding = '10mm';
+
+      html2pdf().set(opt).from(element).save().then(function () {
+        element.style.cssText = originalStyle;
+      }).catch(function (error) {
+        console.error('PDF Error:', error);
+        alert('PDF generation failed. This might be due to local file security restrictions. Please try uploading to your server (Vercel) to confirm the fix, as cross-origin issues are common on local file:/// URLs.');
+        element.style.cssText = originalStyle;
+      });
+    }
+  </script>
+
+
+</body>
+
+</html>
